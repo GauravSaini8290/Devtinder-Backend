@@ -31,11 +31,23 @@ app.post("/feed", async (req, res) => {
   }
 });
 //user update from database
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId
   const data = req.body
-  await UserModel.findByIdAndUpdate({ _id: userId }, data)
-  res.send("user update")
+  try {
+    const ALLOW_KEYS = ["photoUrl", "about", "gender", "age", "skills"]
+    const ISUPDATE_ALLOWED = Object.keys(data).every((k) => ALLOW_KEYS.includes(k))
+    if (!ISUPDATE_ALLOWED) {
+      throw new Error("please check the object keys and try again......")
+    }
+    if (data?.skills.length > 10) {
+      throw new Error("invalide skills")
+    }
+    await UserModel.findByIdAndUpdate(userId, data)
+    res.send("user update")
+  } catch (err) {
+    res.status(404).send("not updated this object")
+  }
 })
 
 //delete user from database
