@@ -4,7 +4,7 @@ const userAuth = async (req, res, next) => {
     try {
 
         //read the token req.cookies
-        const { token } = await req.cookies;
+        const { token } = req.cookies;
         if (!token) {
             throw new Error("token is not valide")
         }
@@ -19,7 +19,7 @@ const userAuth = async (req, res, next) => {
 
     }
     catch (err) {
-        res.status(404).send(" something worng  " + err.massege)
+        res.status(401).send(" something worng  " + err.message)
     }
 
 }

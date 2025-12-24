@@ -12,4 +12,12 @@ const validateSingupData = (req) => {
         throw new error(" password is not validate")
     }
 }
-module.exports = { validateSingupData, }
+
+const validateEditProfileData = (req) => {
+
+    const allowedEditFields = ["firstName", "lastName", "photoUrl", "gender", "age", "about"]
+
+    const isEditAllowed = Object.keys(req.body).every(field => allowedEditFields.includes(field))
+    return isEditAllowed
+}
+module.exports = { validateSingupData, validateEditProfileData, }    
