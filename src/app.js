@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const connectDB = require("./config/database");
-
+const userRouter = require("./routes/user")
 
 const cookieParser = require("cookie-parser");
 
@@ -17,6 +17,7 @@ const requestRouter = require("./routes/requests")
 app.use("/" , authRouter)
 app.use("/" , profileRouter)
 app.use("/" , requestRouter)
+app.use("/" ,userRouter)
 
 connectDB()
 .then(() => {

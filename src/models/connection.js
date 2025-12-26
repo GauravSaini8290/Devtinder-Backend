@@ -3,6 +3,7 @@ const conectionRequestSchema = new mongoose.Schema(
     {
         senderId: {
             type: mongoose.Schema.Types.ObjectId,
+            ref:"user",
             required: true,
         },
         reciverId: {
