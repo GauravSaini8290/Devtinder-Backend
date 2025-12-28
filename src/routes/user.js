@@ -34,7 +34,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
             ]
         }).populate("senderId", "firstName lastName").populate("reciverId", "firstName lastName")
         const data = connectionRequests.map((row) => {
-            if (row.senderId.Id.toString() === logedInUser._id.toString()) {
+            if (row.senderId._Id.toString() === logedInUser._id.toString()) {
                 return row.reciverId
             } return row.senderId
         })
@@ -52,7 +52,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
 
         const loogedInUser = req.user
         const page = parseInt(req.query.page) || 1
-        const limit = parseInt(req.query.limit) || 10
+        let limit = parseInt(req.query.limit) || 10
         limit = limit > 50 ? 50 : limit
         const skip = (page - 1) * limit
         const connectionRequests = await ConnectionRequest.find({
@@ -60,7 +60,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
                 senderId: loogedInUser._id
             }, { reciverId: loogedInUser._id }]
         })
-        const hideUsersFromFeed = new set()
+        const hideUsersFromFeed = new Set()
         connectionRequests.forEach((req) => {
             hideUsersFromFeed.add(req.senderId.toString())
             hideUsersFromFeed.add(req.reciverId.toString())
@@ -71,10 +71,10 @@ userRouter.get("/feed", userAuth, async (req, res) => {
                 { _id: { $nin: Array.from(hideUsersFromFeed) } },
                 { _id: { $ne: loogedInUser._id } }
             ]
-        }).select("firstName lastName").skip(skip).limit(limit)
-        res.json({data:users})
+        }).select("firstName lastName photoUrl about").skip(skip).limit(limit)
+        res.json({ data: users })
     } catch (err) {
-        res.status(400).send(" ERROR", err.message)
+        res.status(400).json({ error: err.message });
     }
 })
 

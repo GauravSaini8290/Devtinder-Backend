@@ -6,7 +6,7 @@ const userAuth = async (req, res, next) => {
         //read the token req.cookies
         const { token } = req.cookies;
         if (!token) {
-            throw new Error("token is not valide")
+            return res.status(401).send(" please login first ")
         }
         const decodedMassege = await jwt.verify(token, "DEV@TENDER1234")
         const { _id } = decodedMassege
@@ -16,7 +16,6 @@ const userAuth = async (req, res, next) => {
         }
         req.user = user
         next()
-
     }
     catch (err) {
         res.status(401).send(" something worng  " + err.message)

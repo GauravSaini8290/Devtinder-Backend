@@ -6,7 +6,7 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
     try {
         res.send(req.user)
     } catch (err) {
-        res.status(404).send(" something worng" + err.massege)
+        res.status(401).send(" something worng" + err.massege)
     }
 })
 

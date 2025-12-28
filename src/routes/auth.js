@@ -16,7 +16,10 @@ authRouter.post("/signup", async (req, res) => {
             firstName, lastName, emailId, password: passwordHash
         });
         await user.save();
-        res.send(" user added successfully ");
+        res.json({
+            data: user,
+            message: "signup successfulyyyyy"
+        });
     } catch (err) {
         res.status(400).send(" user not added" + err.message);
     }
@@ -24,11 +27,10 @@ authRouter.post("/signup", async (req, res) => {
 
 authRouter.post("/login", async (req, res) => {
     try {
-
         const { emailId, password } = req.body
         const user = await UserModel.findOne({ emailId: emailId })
         if (!user) {
-            throw new Error("user not find")
+            throw new Error(" emailId is not correct")
         }
         const isPassswordValid = await bcrypt.compare(password, user.password)
         if (!isPassswordValid) {
@@ -36,13 +38,16 @@ authRouter.post("/login", async (req, res) => {
         } else {
 
             //create JWT token
-            const token = await jwt.sign({ _id: user._id }, "DEV@TENDER1234")
-            res.cookie("token", token, { expiresIn: "1h" })
+            const token = await jwt.sign({ _id: user._id }, "DEV@TENDER1234", { expiresIn: "1h" })
+            res.cookie("token", token, { expires: new Date(Date.now() + 60 * 60 * 1000) })
             //the the token to cookie and send the response back to the user
-            res.send("login successfully")
+            res.json({
+                data: user,
+                message: "login successfulyyyyy"
+            });
         }
     } catch (err) {
-        res.status(404).send(" error ")
+        res.status(400).send("ERROR: " + err.message)
     }
 
 })
