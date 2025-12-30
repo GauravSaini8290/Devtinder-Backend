@@ -7,23 +7,62 @@ const jwt = require("jsonwebtoken")
 
 authRouter.post("/signup", async (req, res) => {
     try {
-        //validation  of data
-        validateSingupData(req)
-        const { firstName, lastName, emailId, password } = req.body
-        //create a new instance of the user 
-        const passwordHash = await bcrypt.hash(password, 10)
+        // 1. Validate request body
+        validateSingupData(req);
+
+        const { firstName, lastName, emailId, password } = req.body;
+
+        // 2. Check if user already exists
+        const existingUser = await UserModel.findOne({ emailId });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already registered" });
+        }
+
+        // 3. Hash password
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // 4. Create user
         const user = new UserModel({
-            firstName, lastName, emailId, password: passwordHash
+            firstName,
+            lastName,
+            emailId,
+            password: passwordHash,
         });
-        await user.save();
-        res.json({
-            data: user,
-            message: "signup successfulyyyyy"
+
+        const savedUser = await user.save();
+
+        // 5. Create JWT
+        const token = jwt.sign(
+            { _id: savedUser._id },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        // 6. Set secure cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 60 * 60 * 1000, // 1 hour
+        });
+
+        // 7. Send response (NO PASSWORD)
+        res.status(201).json({
+            data: {
+                _id: savedUser._id,
+                firstName: savedUser.firstName,
+                lastName: savedUser.lastName,
+                emailId: savedUser.emailId,
+            },
+            message: "Signup successful",
         });
     } catch (err) {
-        res.status(400).send(" user not added" + err.message);
+        res.status(400).json({
+            message: err.message || "User not added",
+        });
     }
 });
+
 
 authRouter.post("/login", async (req, res) => {
     try {
