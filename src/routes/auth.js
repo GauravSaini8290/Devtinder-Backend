@@ -38,7 +38,7 @@ authRouter.post("/login", async (req, res) => {
         } else {
 
             //create JWT token
-            const token = await jwt.sign({ _id: user._id }, "DEV@TENDER1234", { expiresIn: "1h" })
+            const token = await jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" })
             res.cookie("token", token, { expires: new Date(Date.now() + 60 * 60 * 1000) })
             //the the token to cookie and send the response back to the user
             res.json({

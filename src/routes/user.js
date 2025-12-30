@@ -10,7 +10,7 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
         const connectionRequests = await ConnectionRequest.find({
             reciverId: logedInUser._id,
             status: "interested"
-        }).populate("senderId", "firstName lastName")
+        }).populate("senderId", "firstName lastName about photoUrl")
         res.json({
             message: " data fetched ",
             data: connectionRequests
@@ -32,9 +32,9 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
                     senderId: logedInUser._id, status: "accepted"
                 }
             ]
-        }).populate("senderId", "firstName lastName").populate("reciverId", "firstName lastName")
+        }).populate("senderId", "firstName lastName about photoUrl").populate("reciverId", "firstName lastName")
         const data = connectionRequests.map((row) => {
-            if (row.senderId._Id.toString() === logedInUser._id.toString()) {
+            if (row.senderId._id.toString() === logedInUser._id.toString()) {
                 return row.reciverId
             } return row.senderId
         })
@@ -71,7 +71,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
                 { _id: { $nin: Array.from(hideUsersFromFeed) } },
                 { _id: { $ne: loogedInUser._id } }
             ]
-        }).select("firstName lastName photoUrl about").skip(skip).limit(limit)
+        }).select("firstName lastName photoUrl about gender age").skip(skip).limit(limit)
         res.json({ data: users })
     } catch (err) {
         res.status(400).json({ error: err.message });
