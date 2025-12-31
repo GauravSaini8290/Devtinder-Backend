@@ -22,30 +22,36 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
 
 userRouter.get("/user/connections", userAuth, async (req, res) => {
     try {
-        const logedInUser = req.user
+        const loggedInUser = req.user;
         const connectionRequests = await ConnectionRequest.find({
             $or: [
-                {
-                    reciverId: logedInUser._id, status: "accepted"
-                },
-                {
-                    senderId: logedInUser._id, status: "accepted"
-                }
-            ]
-        }).populate("senderId", "firstName lastName about photoUrl").populate("reciverId", "firstName lastName")
-        const data = connectionRequests.map((row) => {
-            if (row.senderId._id.toString() === logedInUser._id.toString()) {
-                return row.reciverId
-            } return row.senderId
+                { reciverId: loggedInUser._id, status: "accepted" },
+                { senderId: loggedInUser._id, status: "accepted" }
+            ],
         })
-        res.json({
-            data
-        })
-    } catch (err) {
-        res.status(401).send(err.message)
-    }
+        // Make sure populate paths match the schema fields exactly
+        .populate("senderId", "firstName lastName about photoUrl")
+        .populate("reciverId", "firstName lastName about photoUrl");
 
-})
+        const data = connectionRequests.map((row) => {
+            // Safety check: ensure populated objects exist
+            if (!row.senderId || !row.reciverId) return null;
+
+            // Check using toString() for reliable comparison
+            if (row.senderId._id.toString() === loggedInUser._id.toString()) {
+                return row.reciverId; // Return the other person (receiver)
+            } else {
+                return row.senderId; // Return the other person (sender)
+            }
+        }).filter(user => user !== null); // Filter out any null entries
+
+        res.json({ data: data });
+    } catch (err) {
+        res.status(400).json({ message: "Server error: " + err.message });
+    }
+});
+
+
 
 userRouter.get("/feed", userAuth, async (req, res) => {
     try {
